@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const app = express();
 const { startServer } = require("./config/startServer");
 const ErrorController = require("./controllers/ErrorController");
+const indexRoutes = require('./routes')
 require("./database/config")();
 
 // IMPORT ROUTES
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(morgan("combined"));
 
 /** Requiring Routes */
+app.use("/api", indexRoutes);
 // app.use("/auth", authRoutes);
 
 /**
