@@ -2,9 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const app = express();
+const cookieParser = require("cookie-parser");
+const cookieEncrypter = require("cookie-encrypter");
 const { startServer } = require("./config/startServer");
 const ErrorController = require("./controllers/ErrorController");
-const indexRoutes = require('./routes')
+const indexRoutes = require("./routes");
+const { COOKIE_SECRET } = require("./config");
 require("./database/config")();
 
 // IMPORT ROUTES
@@ -24,6 +27,8 @@ morgan("combined", {
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser(COOKIE_SECRET));
+app.use(cookieEncrypter(COOKIE_SECRET));
 app.use(morgan("combined"));
 
 /** Requiring Routes */

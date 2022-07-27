@@ -1,7 +1,14 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../../config");
 
-const schema = mongoose.Schema({
-  username: String,
+const Schema = mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   firstname: {
     type: String,
     required: true,
@@ -31,4 +38,41 @@ const schema = mongoose.Schema({
   // list_id NUMERIC
 });
 
-module.exports = mongoose.model('customer', schema)
+Schema.pre("save", async function (next) {
+  try {
+    if (!this.isModified("password")) {
+      return next();
+    }
+    let hashedPassword = await bcrypt.hash(
+      this.password,
+      await bcrypt.genSalt()
+    );
+    this.password = hashedPassword;
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
+
+Schema.methods.comparePassword = async function (candidatePassword) {
+  try {
+    let isMatch = await bcrypt.compare(candidatePassword, this.password);
+    return isMatch;
+  } catch (err) {
+    return err;
+  }
+};
+
+Schema.methods.getAccessToken = (user) =>
+  jwt.sign(user, ACCESS_TOKEN_SECRET, {
+    expiresIn: "15m",
+    issuer: "Figure",
+  });
+
+Schema.methods.GetRefreshToken = (user) =>
+  jwt.sign(user, REFRESH_TOKEN_SECRET, {
+    expiresIn: "7d",
+    issuer: "Figure",
+  });
+
+module.exports = mongoose.model("customer", Schema);
