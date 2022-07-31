@@ -4,4 +4,4 @@ const mongoose = require('mongoose');
 mongoose.set('debug', true);
 mongoose.Promise = Promise;
 
-module.exports.Customer = require("./Customer");
+module.exports.User = require("./User");

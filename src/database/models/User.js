@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = require("../../config");
 
 const Schema = mongoose.Schema({
@@ -35,6 +36,8 @@ const Schema = mongoose.Schema({
   zipCode: Number,
   ipsid: Number,
   emailnotification: Boolean,
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   // list_id NUMERIC
 });
 
@@ -75,4 +78,9 @@ Schema.methods.GetRefreshToken = (user) =>
     issuer: "Figure",
   });
 
-module.exports = mongoose.model("customer", Schema);
+Schema.methods.generatedPasswordReset = function () {
+  this.resetPasswordToken = crypto.randomBytes(64).toString("hex");
+  this.resetPasswordExpires = Date.now() + 3600000;
+};
+
+module.exports = mongoose.model("user", Schema);
