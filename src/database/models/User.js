@@ -31,13 +31,29 @@ const Schema = mongoose.Schema({
     type: String,
     required: true,
   },
+  foodPreferences: [
+    {
+      type: String,
+    },
+  ],
+  cart: {},
+  orders: [],
+  userRole: {
+    type: String,
+    enums: ['APP_ADMIN', 'STORE_ADMIN', 'CUSTOMER'],
+    default: 'CUSTOMER'
+  },
+  store: {},
+  dateOfBirth: String,
   street: String,
   city: String,
+  country: String,
   zipCode: Number,
   ipsid: Number,
   emailnotification: Boolean,
   resetPasswordToken: String,
   resetPasswordExpires: Date,
+  subscribed: Boolean
   // list_id NUMERIC
 });
 
@@ -72,7 +88,7 @@ Schema.methods.getAccessToken = (user) =>
     issuer: "Figure",
   });
 
-Schema.methods.GetRefreshToken = (user) =>
+Schema.methods.getRefreshToken = (user) =>
   jwt.sign(user, REFRESH_TOKEN_SECRET, {
     expiresIn: "7d",
     issuer: "Figure",

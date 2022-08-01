@@ -1,4 +1,5 @@
-const { APP_FRONTEND_URI } = require("../config");
+const jwt = require("jsonwebtoken");
+const { APP_FRONTEND_URI, REFRESH_TOKEN_SECRET } = require("../config");
 const { User } = require("../database/models");
 const {
   checkUserExist,
@@ -19,7 +20,7 @@ class AuthController {
         delete newUser._doc?.password;
 
         const accessToken = await newUser.getAccessToken(newUser._doc);
-        const refreshToken = await newUser.getAccessToken(newUser._doc);
+        const refreshToken = await newUser.getRefreshToken(newUser._doc);
 
         // send email
 
@@ -61,7 +62,7 @@ class AuthController {
         delete findUser._doc?.password;
 
         const accessToken = await findUser.getAccessToken(findUser._doc);
-        const refreshToken = await findUser.getAccessToken(findUser._doc);
+        const refreshToken = await findUser.getRefreshToken(findUser._doc);
 
         res.cookie(
           "refresh_token",
@@ -156,6 +157,38 @@ class AuthController {
 
       return res.status(200).json({
         message: "Password have been updated",
+      });
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  static async refreshToken(req, res) {
+    // const token = req.signedCookies.refresh_token || req.headers['x-refresh-token'];
+    const token = req.headers["x-refresh-token"];
+    console.log("token___", res);
+
+    try {
+      if (!token) return res.status(401).json("No token, authorization denied");
+
+      const decoded = jwt.verify(token, REFRESH_TOKEN_SECRET);
+      const { _id } = decoded;
+
+      let foundUser = await User.findById(_id);
+      delete foundUser._doc.password;
+
+      let accessToken = await foundUser.getAccessToken(foundUser._doc);
+      let refreshToken = await foundUser.getRefreshToken(foundUser._doc);
+
+      res.cookie(
+        "refresh_token",
+        { refresh_token: refreshToken },
+        cookieParams(24 * 60 * 60 * 7)
+      );
+
+      return res.status(200).json({
+        ...foundUser._doc,
+        tokens: { accessToken, refreshToken },
       });
     } catch (error) {
       return res.status(500).json({ message: error.message });

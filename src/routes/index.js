@@ -10,6 +10,7 @@ router.get("/", (req, res) => res.send({ message: "Hello!!!" }));
 // validate fields
 router.post("/signup", AuthController.signup);
 router.post("/login", AuthController.login);
+router.get("/refresh-token", AuthController.refreshToken);
 router.post("/forgot-password", AuthController.forgotPassword);
 router.get(
   "/forgot-password/verify/:token",
