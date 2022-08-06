@@ -36,4 +36,23 @@ const checkResetPasswordTokenEXpired = async (token) => {
   return [resetExpired, findUser._doc];
 };
 
-module.exports = { checkUserExist, checkResetPasswordTokenEXpired };
+const checkEmailVerifyTokenEXpired = async (token) => {
+  let verifyExpired = true;
+  const findUser = await User.findOne({
+    emailVerificationToken: token,
+  });
+
+  if (!findUser) {
+    return [verifyExpired];
+  }
+
+  verifyExpired = new Date(findUser.emailVerificationToken) - new Date() <= 0;
+
+  return [verifyExpired, findUser];
+};
+
+module.exports = {
+  checkUserExist,
+  checkResetPasswordTokenEXpired,
+  checkEmailVerifyTokenEXpired,
+};

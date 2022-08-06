@@ -23,6 +23,12 @@ const Schema = mongoose.Schema({
     required: true,
     unique: true,
   },
+  isEmailVerified: {
+    type: String,
+    default: false,
+  },
+  emailVerificationToken: String,
+  emailVerificationExpires: Date,
   password: {
     type: String,
     required: true,
@@ -40,8 +46,8 @@ const Schema = mongoose.Schema({
   orders: [],
   userRole: {
     type: String,
-    enums: ['APP_ADMIN', 'STORE_ADMIN', 'CUSTOMER'],
-    default: 'CUSTOMER'
+    enums: ["APP_ADMIN", "STORE_ADMIN", "CUSTOMER"],
+    default: "CUSTOMER",
   },
   store: {},
   dateOfBirth: String,
@@ -53,7 +59,7 @@ const Schema = mongoose.Schema({
   emailnotification: Boolean,
   resetPasswordToken: String,
   resetPasswordExpires: Date,
-  subscribed: Boolean
+  subscribed: Boolean,
   // list_id NUMERIC
 });
 
@@ -67,6 +73,9 @@ Schema.pre("save", async function (next) {
       await bcrypt.genSalt()
     );
     this.password = hashedPassword;
+    this.emailVerificationToken = crypto.randomBytes(64).toString("hex");
+    this.emailVerificationExpires = Date.now() + (1000*60*60*24*7);
+    
     return next();
   } catch (err) {
     return next(err);

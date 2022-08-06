@@ -4,6 +4,7 @@ const { User } = require("../database/models");
 const {
   checkUserExist,
   checkResetPasswordTokenEXpired,
+  checkEmailVerifyTokenEXpired,
 } = require("../services/user");
 const cookieParams = require("../utils/cookieParams");
 const MailController = require("./EmailController");
@@ -22,6 +23,13 @@ class AuthController {
         const accessToken = await newUser.getAccessToken(newUser._doc);
         const refreshToken = await newUser.getRefreshToken(newUser._doc);
 
+        const mail = new MailController(newUser.email);
+        await mail.sendMail(
+          "Chopchow | Verify Email",
+          `<h1>Welcome to Chopchow</h1> </br> <h3>Please confirm your email by clicking link below</h3>
+      <a href="${APP_FRONTEND_URI}/verify-email/${newUser.emailVerificationToken}">Click this link to verify email</a>`
+        );
+
         // send email
 
         res.cookie(
@@ -29,6 +37,7 @@ class AuthController {
           { refresh_token: refreshToken },
           cookieParams(24 * 60 * 60 * 7)
         );
+
         return res.status(201).json({
           ...newUser._doc,
           tokens: {
@@ -101,7 +110,7 @@ class AuthController {
       const mail = new MailController(updatedUser.email);
       await mail.sendMail(
         "Forgot Password",
-        `<h1>Figure App</h1> </br> <h3>Reset Password</h3>
+        `<h1>Chop chow</h1> </br> <h3>Reset Password</h3>
       <a href="${APP_FRONTEND_URI}/reset-password/${updatedUser.resetPasswordToken}">Click this link to reset password</a>`
       );
 
@@ -193,6 +202,28 @@ class AuthController {
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
+  }
+
+  static async verifyEmail(req, res) {
+    const verificationExpired = await checkEmailVerifyTokenEXpired(
+      req.params.token
+    );
+
+    if (verificationExpired[0])
+      return res.status(400).json({
+        message: "Invalid or Expired Link",
+      });
+
+    const user = verificationExpired[1];
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+
+    await user.save();
+
+    return res.status(200).json({
+      message: "Email verified successfully",
+    });
   }
 }
 
