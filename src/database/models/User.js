@@ -49,7 +49,12 @@ const Schema = mongoose.Schema({
     enums: ["APP_ADMIN", "STORE_ADMIN", "CUSTOMER"],
     default: "CUSTOMER",
   },
-  store: {},
+  stores: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "store",
+    },
+  ],
   dateOfBirth: String,
   street: String,
   city: String,
@@ -74,8 +79,8 @@ Schema.pre("save", async function (next) {
     );
     this.password = hashedPassword;
     this.emailVerificationToken = crypto.randomBytes(64).toString("hex");
-    this.emailVerificationExpires = Date.now() + (1000*60*60*24*7);
-    
+    this.emailVerificationExpires = Date.now() + 1000 * 60 * 60 * 24 * 7;
+
     return next();
   } catch (err) {
     return next(err);

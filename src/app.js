@@ -7,7 +7,10 @@ const cookieEncrypter = require("cookie-encrypter");
 const { startServer } = require("./config/startServer");
 const ErrorController = require("./controllers/ErrorController");
 const indexRoutes = require("./routes");
+const productsRoutes = require("./routes/products");
+const storesRoutes = require("./routes/stores");
 const { COOKIE_SECRET } = require("./config");
+
 require("./database/config")();
 
 // IMPORT ROUTES
@@ -33,7 +36,8 @@ app.use(morgan("combined"));
 
 /** Requiring Routes */
 app.use("/api", indexRoutes);
-// app.use("/auth", authRoutes);
+app.use("/api/products", productsRoutes);
+app.use("/api/stores", storesRoutes);
 
 /**
  * Catch 404 and forward to error handler
