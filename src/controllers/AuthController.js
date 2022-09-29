@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { APP_FRONTEND_URI, REFRESH_TOKEN_SECRET } = require("../config");
-const { User } = require("../database/models");
+const { User, GroceryList } = require("../database/models");
 const {
   checkUserExist,
   checkResetPasswordTokenEXpired,
@@ -17,18 +17,21 @@ class AuthController {
 
       if (!userExist.email && !userExist.username) {
         let newUser = new User(req.body);
+        const groceryLists = await GroceryList.create({ user: newUser._id });
+
+        newUser.groceryList = groceryLists._id;
         await newUser.save();
         delete newUser._doc?.password;
 
         const accessToken = await newUser.getAccessToken(newUser._doc);
         const refreshToken = await newUser.getRefreshToken(newUser._doc);
 
-        const mail = new MailController(newUser.email);
-        await mail.sendMail(
-          "Chopchow | Verify Email",
-          `<h1>Welcome to Chopchow</h1> </br> <h3>Please confirm your email by clicking link below</h3>
-      <a href="${APP_FRONTEND_URI}/verify-email/${newUser.emailVerificationToken}">Click this link to verify email</a>`
-        );
+        //   const mail = new MailController(newUser.email);
+        //   await mail.sendMail(
+        //     "Chopchow | Verify Email",
+        //     `<h1>Welcome to Chopchow</h1> </br> <h3>Please confirm your email by clicking link below</h3>
+        // <a href="${APP_FRONTEND_URI}/verify-email/${newUser.emailVerificationToken}">Click this link to verify email</a>`
+        //   );
 
         // send email
 
@@ -90,7 +93,7 @@ class AuthController {
         throw Error("Incorrect Password");
       }
     } catch (error) {
-      return res.status(500).json({ message: error.message });
+      return res.status(400).json({ message: error.message });
     }
   }
 
@@ -107,18 +110,19 @@ class AuthController {
       findUser.generatedPasswordReset();
       const updatedUser = await findUser.save();
 
-      const mail = new MailController(updatedUser.email);
-      await mail.sendMail(
-        "Forgot Password",
-        `<h1>Chop chow</h1> </br> <h3>Reset Password</h3>
-      <a href="${APP_FRONTEND_URI}/reset-password/${updatedUser.resetPasswordToken}">Click this link to reset password</a>`
-      );
+      // send email
+      // const mail = new MailController(updatedUser.email);
+      // await mail.sendMail(
+      //   "Forgot Password",
+      //   `<h1>Chop chow</h1> </br> <h3>Reset Password</h3>
+      // <a href="${APP_FRONTEND_URI}/reset-password/${updatedUser.resetPasswordToken}">Click this link to reset password</a>`
+      // );
 
       res.status(200).json({
         message: "A reset email has been sent",
       });
     } catch (error) {
-      return res.status(500).json({ message: error.message });
+      return res.status(400).json({ message: error.message });
     }
   }
 

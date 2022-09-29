@@ -7,3 +7,5 @@ mongoose.Promise = Promise;
 module.exports.User = require("./User");
 module.exports.Product = require("./Product");
 module.exports.Store = require("./Store");
+module.exports.Meal = require("./Meal");
+module.exports.GroceryList = require("./GroceryList");

@@ -7,8 +7,11 @@ const cookieEncrypter = require("cookie-encrypter");
 const { startServer } = require("./config/startServer");
 const ErrorController = require("./controllers/ErrorController");
 const indexRoutes = require("./routes");
+const authRoutes = require("./routes/auth");
 const productsRoutes = require("./routes/products");
 const storesRoutes = require("./routes/stores");
+const mealsRoutes = require("./routes/meals");
+const groceryListsRoutes = require("./routes/groceryLists");
 const { COOKIE_SECRET } = require("./config");
 
 require("./database/config")();
@@ -36,8 +39,11 @@ app.use(morgan("combined"));
 
 /** Requiring Routes */
 app.use("/api", indexRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/products", productsRoutes);
 app.use("/api/stores", storesRoutes);
+app.use("/api/meals", mealsRoutes);
+app.use("/api/grocery-lists", groceryListsRoutes);
 
 /**
  * Catch 404 and forward to error handler

@@ -43,6 +43,10 @@ const Schema = mongoose.Schema({
     },
   ],
   cart: {},
+  groceryList: {
+    type: mongoose.Types.ObjectId,
+    ref: "GroceryList",
+  },
   orders: [],
   userRole: {
     type: String,
